@@ -4,18 +4,21 @@ require 'json'
 
 module FBI
   class Component
-    
-    def self.start
-      component = new()
+    attr_reader :channel
 
+    def self.start
       AMQP::Channel.error do |msg|
         print "ERROR: #{msg}\n"
         EM.stop
       end
-      
+
       AMQP.start(:host => 'localhost') do
-        yield component
+        yield new()
       end
+    end
+
+    def initialize
+      @channel = AMQP::Channel.new
     end
 
     def temporary_sink name, &blck
@@ -38,11 +41,11 @@ module FBI
     def initialize component, persistent, name, &blck
       @component = component
       if (persistent) then
-        @queue = MQ.new.queue("fbi.sink-#{name}", {
+        @queue = component.channel.queue("fbi.sink-#{name}", {
           :durable => true
         })
       else
-        @queue = MQ.new.queue("fbi.sink-#{name}.temp", {
+        @queue = component.channel.queue("fbi.sink-#{name}.temp", {
           :exclusive => true,
           :auto_delete => true
         })
@@ -61,7 +64,7 @@ module FBI
     
     def initialize component
       @component = component
-      @queue = MQ.new.queue('fbi.sources')
+      @queue = component.channel.queue('fbi.sources')
     end
     
     def queue packet

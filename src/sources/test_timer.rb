@@ -8,7 +8,12 @@ FBI::Component.start do |fbi|
       puts 'Sending ping'
       src.queue({
         'message' => {
-          'text' => "ping #{clock += 1}"
+          'text' => "ping #{clock += 1}",
+          'project' => 'fbi',
+          'type' => 'heartbeat',
+        },
+        'heartbeat' => {
+          'source' => Time.now.to_f
         }
       })
     end
