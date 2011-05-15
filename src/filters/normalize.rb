@@ -3,9 +3,9 @@ require 'filters'
 module FBI::Filters
   class Normalize < FBI::Filter
     def filter message
-      return unless message['message']
-      return unless message['message']['text']
-      return unless message['message']['project']
+      return false unless message['message']
+      return false unless message['message']['text']
+      return false unless message['message']['project']
 
       type = (message['message']['type'] ||= 'plain')
 
@@ -25,7 +25,7 @@ module FBI::Filters
 
       message['system'] = {}
 
-      self.push message
+      return true
     end
   end
 end
